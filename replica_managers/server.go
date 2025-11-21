@@ -35,8 +35,11 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 	return &proto.BidResponse{Ack: false}, nil
 }
 
-func (s *ReplicationServiceServer) Result(ctx context.Context) (*proto.ResultResponse, error) {
-
+func (s *ReplicationServiceServer) Result(ctx context.Context, _ *proto.Empty) (*proto.ResultResponse, error) {
+	return &proto.ResultResponse{
+		Result:          s.highest_bid,
+		HighestBidderId: s.highest_bidder_id,
+	}, nil
 }
 
 func main() {
