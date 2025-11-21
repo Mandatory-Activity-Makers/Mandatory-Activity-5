@@ -2,14 +2,37 @@ package main
 
 import (
 	proto "ReplicationService/grpc"
+	"context"
 	"log"
 	"net"
+	"sync"
 
 	"google.golang.org/grpc"
 )
 
 type ReplicationServiceServer struct {
 	proto.UnimplementedReplicationServiceServer
+
+	port              string // localhost
+	mutex             sync.Mutex
+	timestamp         int64 // Lamport clock
+	highest_bid       int64 // current highest bid
+	highest_bidder_id int64 // current highest bidder id
+}
+
+func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidRequest) (*proto.BidResponse, error) {
+	ClientBid := req.GetAmount()
+	ClientID := req.GetId()
+
+	s.mutex.Lock()
+	if ClientBid > s.highest_bid {
+		s.highest_bid = ClientBid
+		s.highest_bidder_id = ClientID
+		return &proto.BidResponse{Ack: true}, nil
+	}
+	s.mutex.Unlock()
+
+	return &proto.BidResponse{Ack: false}, nil
 }
 
 func main() {

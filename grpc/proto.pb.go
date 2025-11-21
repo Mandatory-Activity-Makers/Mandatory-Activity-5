@@ -24,6 +24,7 @@ const (
 type BidRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Amount        int64                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	Id            int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,6 +62,13 @@ func (*BidRequest) Descriptor() ([]byte, []int) {
 func (x *BidRequest) GetAmount() int64 {
 	if x != nil {
 		return x.Amount
+	}
+	return 0
+}
+
+func (x *BidRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
 	}
 	return 0
 }
@@ -110,10 +118,11 @@ func (x *BidResponse) GetAck() bool {
 }
 
 type ResultResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Result        int64                  `protobuf:"varint,1,opt,name=result,proto3" json:"result,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Result          int64                  `protobuf:"varint,1,opt,name=result,proto3" json:"result,omitempty"` // highest bid
+	HighestBidderId int64                  `protobuf:"varint,2,opt,name=highest_bidder_id,json=highestBidderId,proto3" json:"highest_bidder_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ResultResponse) Reset() {
@@ -149,6 +158,13 @@ func (*ResultResponse) Descriptor() ([]byte, []int) {
 func (x *ResultResponse) GetResult() int64 {
 	if x != nil {
 		return x.Result
+	}
+	return 0
+}
+
+func (x *ResultResponse) GetHighestBidderId() int64 {
+	if x != nil {
+		return x.HighestBidderId
 	}
 	return 0
 }
@@ -193,14 +209,16 @@ var File_proto_proto protoreflect.FileDescriptor
 
 const file_proto_proto_rawDesc = "" +
 	"\n" +
-	"\vproto.proto\"$\n" +
+	"\vproto.proto\"4\n" +
 	"\n" +
 	"BidRequest\x12\x16\n" +
-	"\x06amount\x18\x01 \x01(\x03R\x06amount\"\x1f\n" +
+	"\x06amount\x18\x01 \x01(\x03R\x06amount\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"\x1f\n" +
 	"\vBidResponse\x12\x10\n" +
-	"\x03ack\x18\x01 \x01(\bR\x03ack\"(\n" +
+	"\x03ack\x18\x01 \x01(\bR\x03ack\"T\n" +
 	"\x0eResultResponse\x12\x16\n" +
-	"\x06result\x18\x01 \x01(\x03R\x06result\"\a\n" +
+	"\x06result\x18\x01 \x01(\x03R\x06result\x12*\n" +
+	"\x11highest_bidder_id\x18\x02 \x01(\x03R\x0fhighestBidderId\"\a\n" +
 	"\x05Empty2]\n" +
 	"\x12ReplicationService\x12\"\n" +
 	"\x03Bid\x12\v.BidRequest\x1a\f.BidResponse\"\x00\x12#\n" +
