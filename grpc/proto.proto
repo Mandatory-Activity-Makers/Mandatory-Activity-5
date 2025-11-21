@@ -1,2 +1,25 @@
 syntax = "proto3";
 option go_package = "ReplicationService/grpc/proto";
+
+// Compile .proto with the following command inside ./grpc/ folder
+// protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto.proto
+
+message BidRequest {
+    int64 amount = 1;
+}
+
+message BidResponse {
+    bool ack = 1;
+}
+
+message ResultResponse {
+     int64 result = 1;
+}
+
+message Empty {}
+
+service ReplicationService {
+    rpc Bid (BidRequest) returns (BidResponse) {};
+
+    rpc Result (Empty) returns (ResultResponse) {};
+} 
