@@ -23,7 +23,7 @@ type ReplicationServiceServer struct {
 func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidRequest) (*proto.BidResponse, error) {
 	ClientBid := req.GetAmount()
 	ClientID := req.GetId()
-
+	log.Printf("Server BID: Received bid of %d from client %d", ClientBid, ClientID)
 	s.mutex.Lock()
 	if ClientBid > s.highest_bid {
 		s.highest_bid = ClientBid

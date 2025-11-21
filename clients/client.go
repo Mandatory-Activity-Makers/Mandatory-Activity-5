@@ -30,7 +30,8 @@ func main() {
 	defer cancel()
 
 	stdin := bufio.NewScanner(os.Stdin)
-	fmt.Println("Type messages and press Enter to publish. Type '/leave' to exit.")
+	fmt.Println("Enter 'bid' to place a bid, thereafter enter your bid amount:")
+
 	for stdin.Scan() {
 		line := stdin.Text()
 		line = strings.TrimSpace(line)
@@ -39,7 +40,6 @@ func main() {
 		}
 		//Handle exit when user types /leave
 		if line == "bid" {
-			// call Leave RPC then exit
 			_, err := client.Bid(ctx, &proto.BidRequest{Amount: 100, Id: 1})
 			if err != nil {
 				log.Printf("Client BID_RPC_ERROR: %v", err)
@@ -48,6 +48,15 @@ func main() {
 			// Sleep briefly to allow leave broadcast to flow and then exit
 			time.Sleep(200 * time.Millisecond)
 			return
+		}
+
+		if line == "result" {
+			result, err := client.Result(ctx, &proto.Empty{})
+			if err != nil {
+				log.Printf("Client RESULT_RPC_ERROR: %v", err)
+			} else {
+				log.Printf("Client RESULT: highest bid is %d by client %d", result.GetResult(), result.GetHighestBidderId())
+			}
 		}
 	}
 }
