@@ -35,6 +35,10 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 	return &proto.BidResponse{Ack: false}, nil
 }
 
+func (s *ReplicationServiceServer) Result(ctx context.Context) (*proto.ResultResponse, error) {
+
+}
+
 func main() {
 	addr := ":50051"
 
