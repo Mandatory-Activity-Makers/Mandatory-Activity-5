@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,47 +17,87 @@ import (
 
 func main() {
 	var clientID int64 = 1
-	var serverAddr string = "localhost:50051"
-	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("Not working")
-	}
-	defer conn.Close() //Connection is closed when main func exits
+	serverAddr := "localhost:50051"
 
-	//Create gRPC client stub from the proto file
+	// Dial with timeout so failures return quickly during development
+	dialCtx, dialCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer dialCancel()
+	conn, err := grpc.DialContext(dialCtx, serverAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+	)
+	if err != nil {
+		log.Fatalf("failed to dial %s: %v", serverAddr, err)
+	}
+	defer conn.Close()
+
 	client := proto.NewReplicationServiceClient(conn)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	stdin := bufio.NewScanner(os.Stdin)
-	fmt.Println("Enter 'bid' to place a bid, thereafter enter your bid amount:")
+	fmt.Println("Commands:")
+	fmt.Println("  bid <amount>   - place a bid, e.g. 'bid 100'")
+	fmt.Println("  result         - request highest bid")
+	fmt.Println("  quit           - exit client")
 
 	for stdin.Scan() {
-		line := stdin.Text()
-		line = strings.TrimSpace(line)
+		line := strings.TrimSpace(stdin.Text())
 		if line == "" {
 			continue
 		}
-		//Handle exit when user types /leave
-		if line == "bid" {
-			_, err := client.Bid(ctx, &proto.BidRequest{Amount: 100, Id: 1})
-			if err != nil {
-				log.Printf("Client BID_RPC_ERROR: %v", err)
-			}
-			log.Printf("Client BID: id=%d bid 100", clientID)
-			// Sleep briefly to allow leave broadcast to flow and then exit
-			time.Sleep(200 * time.Millisecond)
-			return
-		}
+		parts := strings.Fields(line)
+		cmd := strings.ToLower(parts[0])
 
-		if line == "result" {
-			result, err := client.Result(ctx, &proto.Empty{})
-			if err != nil {
-				log.Printf("Client RESULT_RPC_ERROR: %v", err)
+		switch cmd {
+		case "quit", "exit":
+			fmt.Println("exiting")
+			return
+
+		case "bid":
+			var amount int64
+			if len(parts) >= 2 {
+				v, err := strconv.ParseInt(parts[1], 10, 64)
+				if err != nil {
+					log.Printf("invalid amount: %v", err)
+					continue
+				}
+				amount = v
 			} else {
-				log.Printf("Client RESULT: highest bid is %d by client %d", result.GetResult(), result.GetHighestBidderId())
+				fmt.Print("Enter bid amount: ")
+				if !stdin.Scan() {
+					continue
+				}
+				v, err := strconv.ParseInt(strings.TrimSpace(stdin.Text()), 10, 64)
+				if err != nil {
+					log.Printf("invalid amount: %v", err)
+					continue
+				}
+				amount = v
 			}
+
+			rpcCtx, rpcCancel := context.WithTimeout(context.Background(), 3*time.Second)
+			resp, err := client.Bid(rpcCtx, &proto.BidRequest{Amount: amount, Id: clientID})
+			rpcCancel()
+			if err != nil {
+				log.Printf("BID RPC error: %v", err)
+				continue
+			}
+			log.Printf("Bid sent: id=%d amount=%d ack=%v", clientID, amount, resp.GetAck())
+
+		case "result":
+			rpcCtx, rpcCancel := context.WithTimeout(context.Background(), 3*time.Second)
+			resp, err := client.Result(rpcCtx, &proto.Empty{})
+			rpcCancel()
+			if err != nil {
+				log.Printf("RESULT RPC error: %v", err)
+				continue
+			}
+			log.Printf("RESULT: highest bid=%d by client=%d", resp.GetResult(), resp.GetHighestBidderId())
+
+		default:
+			fmt.Println("unknown command; use 'bid <amount>', 'result', or 'quit'")
 		}
+	}
+	if err := stdin.Err(); err != nil {
+		log.Printf("stdin error: %v", err)
 	}
 }

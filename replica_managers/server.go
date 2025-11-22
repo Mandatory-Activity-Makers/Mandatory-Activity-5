@@ -24,18 +24,21 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 	ClientBid := req.GetAmount()
 	ClientID := req.GetId()
 	log.Printf("Server BID: Received bid of %d from client %d", ClientBid, ClientID)
-	s.mutex.Lock()
+	//s.mutex.Lock()
+	//defer s.mutex.Unlock()
+
 	if ClientBid > s.highest_bid {
 		s.highest_bid = ClientBid
 		s.highest_bidder_id = ClientID
 		return &proto.BidResponse{Ack: true}, nil
+	} else {
+		return &proto.BidResponse{Ack: false}, nil
 	}
-	s.mutex.Unlock()
-
-	return &proto.BidResponse{Ack: false}, nil
 }
 
 func (s *ReplicationServiceServer) Result(ctx context.Context, _ *proto.Empty) (*proto.ResultResponse, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	return &proto.ResultResponse{
 		Result:          s.highest_bid,
 		HighestBidderId: s.highest_bidder_id,
