@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -17,11 +18,41 @@ import (
 type ReplicationServiceServer struct {
 	proto.UnimplementedReplicationServiceServer
 
-	port              string
-	mutex             sync.Mutex
-	timestamp         int64
+	port  string
+	mutex sync.Mutex
+
+	auctionEnd      time.Time
+	isAuctionActive bool
+
 	highest_bid       int64
 	highest_bidder_id int64
+}
+
+func NewAuctionService() *ReplicationServiceServer {
+	duration := 10 * time.Second //Duration of the auction
+
+	s := &ReplicationServiceServer{
+		highest_bid:     0,
+		isAuctionActive: true,
+		auctionEnd:      time.Now().Add(duration),
+	}
+
+	go s.startAuctionTimer(duration)
+	log.Printf("Auction started! Will end at: %v", s.auctionEnd)
+	return s
+}
+
+func (s *ReplicationServiceServer) startAuctionTimer(duration time.Duration) {
+	timer := time.NewTimer(duration)
+	<-timer.C
+
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	s.isAuctionActive = false
+
+	log.Printf("Auction ended after %v! Winner: %d with bid: %d",
+		duration, s.highest_bidder_id, s.highest_bid)
 }
 
 func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidRequest) (*proto.BidResponse, error) {
@@ -70,6 +101,8 @@ func main() {
 
 	// Create server instance
 	grpcServer := grpc.NewServer()
+	// Start Auction
+	NewAuctionService()
 
 	// Register our service implementation with the gRPC server
 	proto.RegisterReplicationServiceServer(grpcServer, &ReplicationServiceServer{
