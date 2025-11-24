@@ -8,10 +8,13 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type ReplicationServiceServer struct {
@@ -102,12 +105,48 @@ func (s *ReplicationServiceServer) Replicate(ctx context.Context, req *proto.Rep
 	}
 }
 
+// Call this after starting the server
+func (s *ReplicationServiceServer) ConnectToPeers() {
+	s.peerClients = make([]proto.ReplicationServiceClient, 0)
+
+	for _, peerAddr := range s.peerAddresses {
+		log.Printf("Server [%s] SETUP: Attempting to connect to peer %s", s.port, peerAddr)
+
+		// Create connection with timeout
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		conn, err := grpc.DialContext(ctx, peerAddr,
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithBlock(),
+		)
+		cancel()
+
+		if err != nil {
+			log.Printf("Server [%s] SETUP: Failed to connect to peer %s: %v", s.port, peerAddr, err)
+			// Don't add to peerClients if connection fails
+			continue
+		}
+
+		client := proto.NewReplicationServiceClient(conn)
+		s.peerClients = append(s.peerClients, client)
+		log.Printf("Server [%s] SETUP: Successfully connected to peer %s", s.port, peerAddr)
+	}
+
+	log.Printf("Server [%s] SETUP: Connected to %d/%d peers", s.port, len(s.peerClients), len(s.peerAddresses))
+}
+
 func main() {
-	// Parse command line flag for port
+	// Parse command line flags
 	port := flag.String("port", "50051", "Server port number")
+	peers := flag.String("peers", "", "Comma-separated peer addresses (e.g., localhost:50052,localhost:50053)")
 	flag.Parse()
 
 	addr := ":" + *port
+
+	// Parse peer addresses
+	var peerAddresses []string
+	if *peers != "" {
+		peerAddresses = strings.Split(*peers, ",")
+	}
 
 	// Create TCP listener on specified port
 	lis, err := net.Listen("tcp", addr)
@@ -116,27 +155,37 @@ func main() {
 	}
 
 	// Create server instance
-	grpcServer := grpc.NewServer()
+	server := &ReplicationServiceServer{
+		port:          *port,
+		peerAddresses: peerAddresses,
+	}
 
-	// Register our service implementation with the gRPC server
-	proto.RegisterReplicationServiceServer(grpcServer, &ReplicationServiceServer{
-		port: *port,
-	})
+	// Create and register gRPC server
+	grpcServer := grpc.NewServer()
+	proto.RegisterReplicationServiceServer(grpcServer, server)
 
 	log.Printf("Server STARTUP: listening on %s", addr)
+
+	// Start gRPC server in a goroutine
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("Server ERROR: %v", err)
+		}
+	}()
+
+	// Give the server a moment to start before connecting to peers
+	time.Sleep(time.Second)
+
+	// Connect to peer servers
+	server.ConnectToPeers()
+
+	log.Printf("Server [%s] READY: Server is ready to accept requests", *port)
 
 	// Handle graceful shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	go func() {
-		<-sigChan
-		log.Printf("Server [%s] SHUTDOWN: Received shutdown signal", *port)
-		grpcServer.GracefulStop()
-	}()
-
-	// Run server
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("Server ERROR: %v", err)
-	}
+	<-sigChan
+	log.Printf("Server [%s] SHUTDOWN: Received shutdown signal", *port)
+	grpcServer.GracefulStop()
 }
