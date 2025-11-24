@@ -14,8 +14,18 @@ message BidResponse {
 }
 
 message ResultResponse {
-     int64 result = 1; // highest bid
-     int64 highest_bidder_id = 2;
+    int64 result = 1; // highest bid
+    int64 highest_bidder_id = 2;
+}
+
+message ReplicateRequest {
+    int64 amount = 1;
+    int64 id = 2;
+}
+
+message ReplicateResponse {
+    bool ack = 1;
+    int64 current_highest = 2;
 }
 
 message Empty {}
@@ -24,4 +34,6 @@ service ReplicationService {
     rpc Bid (BidRequest) returns (BidResponse) {};
 
     rpc Result (Empty) returns (ResultResponse) {};
+
+    rpc Replicate (ReplicateRequest) returns (ReplicateResponse) {};
 } 
