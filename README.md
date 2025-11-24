@@ -1,6 +1,21 @@
 # Mandatory-Activity-5
 == A Distributed Auction System ==
 
+:Tutorial:
+//In three terminals run three servers and specify their port and peer servers:
+go run server.go -port 50051 -peers "localhost:50052,localhost:50053"
+go run server.go -port 50052 -peers "localhost:50051,localhost:50053"
+go run server.go -port 50053 -peers "localhost:50051,localhost:50052"
+
+//In as many client terminals you want to run, write:
+go run client.go -id 1
+go run client.go -id 2
+go run client.go -id 3
+.
+.
+.
+go run client.go -id x
+
 ::Introduction::
 
 You must implement a **distributed auction system** using replication:
