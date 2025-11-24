@@ -28,18 +28,19 @@ type ReplicationServiceServer struct {
 	highest_bidder_id int64
 }
 
-func NewAuctionService() *ReplicationServiceServer {
-	duration := 10 * time.Second //Duration of the auction
+// InitializeAuction sets up the auction on the EXISTING instance
+func (s *ReplicationServiceServer) InitializeAuction(duration time.Duration) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
-	s := &ReplicationServiceServer{
-		highest_bid:     0,
-		isAuctionActive: true,
-		auctionEnd:      time.Now().Add(duration),
-	}
+	// Initialize the fields on the current instance
+	s.highest_bid = 0
+	s.highest_bidder_id = 0
+	s.isAuctionActive = true
+	s.auctionEnd = time.Now().Add(duration)
 
 	go s.startAuctionTimer(duration)
-	log.Printf("Auction started! Will end at: %v", s.auctionEnd)
-	return s
+	log.Printf("Server [%s] Auction started! Will end at: %v", s.port, s.auctionEnd)
 }
 
 func (s *ReplicationServiceServer) startAuctionTimer(duration time.Duration) {
@@ -62,6 +63,11 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+
+	if !s.isAuctionActive {
+		log.Printf("Server [%s] BID: Auction is closed", s.port)
+		return &proto.BidResponse{Ack: false}, nil
+	}
 
 	if ClientBid > s.highest_bid {
 		s.highest_bid = ClientBid
@@ -99,15 +105,17 @@ func main() {
 		log.Fatalf("Server STARTUP_ERROR: failed to listen on %s: %v", addr, err)
 	}
 
-	// Create server instance
-	grpcServer := grpc.NewServer()
-	// Start Auction
-	NewAuctionService()
-
-	// Register our service implementation with the gRPC server
-	proto.RegisterReplicationServiceServer(grpcServer, &ReplicationServiceServer{
+	// Create server instance WITH THE PORT
+	server := &ReplicationServiceServer{
 		port: *port,
-	})
+	}
+
+	// Start Auction on THE SAME INSTANCE
+	server.InitializeAuction(100 * time.Second)
+
+	// Create gRPC server and register OUR INSTANCE
+	grpcServer := grpc.NewServer()
+	proto.RegisterReplicationServiceServer(grpcServer, server)
 
 	log.Printf("Server STARTUP: listening on %s", addr)
 
