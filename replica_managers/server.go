@@ -25,7 +25,7 @@ type ReplicationServiceServer struct {
 	isAuctionActive bool
 
 	highest_bid       int64
-	highest_bidder_id int64
+	highest_bidder_id string
 }
 
 // InitializeAuction sets up the auction on the EXISTING instance
@@ -35,7 +35,7 @@ func (s *ReplicationServiceServer) InitializeAuction(duration time.Duration) {
 
 	// Initialize the fields on the current instance
 	s.highest_bid = 0
-	s.highest_bidder_id = 0
+	s.highest_bidder_id = ""
 	s.isAuctionActive = true
 	s.auctionEnd = time.Now().Add(duration)
 
@@ -52,27 +52,27 @@ func (s *ReplicationServiceServer) startAuctionTimer(duration time.Duration) {
 
 	s.isAuctionActive = false
 
-	log.Printf("Auction ended after %v! Winner: %d with bid: %d",
+	log.Printf("Auction ended after %v! Winner: %s with bid: %d",
 		duration, s.highest_bidder_id, s.highest_bid)
 }
 
 func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidRequest) (*proto.BidResponse, error) {
 	ClientBid := req.GetAmount()
 	ClientID := req.GetId()
-	log.Printf("Server [%s] BID: Received bid of %d from client %d", s.port, ClientBid, ClientID)
+	log.Printf("Server [%s] BID: Received bid of %d from client %s", s.port, ClientBid, ClientID)
 
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	if !s.isAuctionActive {
-		log.Printf("Server [%s] BID: Auction is closed", s.port)
+		log.Printf("Server [%s] BID: Auction has ended! Highest bid is %d from client %s", s.port, s.highest_bid, s.highest_bidder_id)
 		return &proto.BidResponse{Ack: false}, nil
 	}
 
 	if ClientBid > s.highest_bid {
 		s.highest_bid = ClientBid
 		s.highest_bidder_id = ClientID
-		log.Printf("Server [%s] BID: New highest bid: %d from client %d", s.port, ClientBid, ClientID)
+		log.Printf("Server [%s] BID: New highest bid: %d from client %s", s.port, ClientBid, ClientID)
 		return &proto.BidResponse{Ack: true}, nil
 	} else {
 		log.Printf("Server [%s] BID: Bid rejected (not higher than current: %d)", s.port, s.highest_bid)
@@ -84,7 +84,7 @@ func (s *ReplicationServiceServer) Result(ctx context.Context, _ *proto.Empty) (
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	log.Printf("Server [%s] RESULT: Returning highest bid: %d by client %d", s.port, s.highest_bid, s.highest_bidder_id)
+	log.Printf("Server [%s] RESULT: Returning highest bid: %d by client %s", s.port, s.highest_bid, s.highest_bidder_id)
 
 	return &proto.ResultResponse{
 		Result:          s.highest_bid,

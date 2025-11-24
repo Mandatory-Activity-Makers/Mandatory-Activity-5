@@ -4,6 +4,7 @@ import (
 	proto "ReplicationService/grpc"
 	"bufio"
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -23,10 +24,10 @@ type ClientConnection struct {
 	conn         *grpc.ClientConn
 	mu           sync.RWMutex
 	reconnecting bool
-	clientID     int64
+	clientID     string
 }
 
-func NewClientConnection(clientID int64, serverAddrs []string) *ClientConnection {
+func NewClientConnection(clientID string, serverAddrs []string) *ClientConnection {
 	return &ClientConnection{
 		serverAddrs: serverAddrs,
 		currentIdx:  0,
@@ -142,13 +143,21 @@ func (cc *ClientConnection) Close() {
 }
 
 func main() {
-	var clientID int64 = 1
+	var clientID string
+
+	flag.StringVar(&clientID, "id", "", "Client ID (required)")
+	flag.Parse()
 
 	// List all server addresses - add more as needed
 	serverAddrs := []string{
 		"localhost:50051",
 		"localhost:50052",
 		"localhost:50053",
+	}
+
+	if clientID == "" {
+		fmt.Fprintln(os.Stderr, "client id is required: -id <name>")
+		os.Exit(2)
 	}
 
 	clientConn := NewClientConnection(clientID, serverAddrs)
@@ -212,7 +221,7 @@ func main() {
 					continue
 				}
 
-				log.Printf("Bid sent: id=%d amount=%d ack=%v", clientID, amount, resp.GetAck())
+				log.Printf("Bid sent: id=%s amount=%d ack=%v", clientID, amount, resp.GetAck())
 				break
 			}
 
@@ -230,7 +239,7 @@ func main() {
 					continue
 				}
 
-				log.Printf("RESULT: highest bid=%d by client=%d", resp.GetResult(), resp.GetHighestBidderId())
+				log.Printf("RESULT: highest bid=%d by client=%s", resp.GetResult(), resp.GetHighestBidderId())
 				break
 			}
 

@@ -6,7 +6,7 @@ option go_package = "ReplicationService/grpc/proto";
 
 message BidRequest {
     int64 amount = 1;
-    int64 id = 2;
+    string id = 2;
 }
 
 message BidResponse {
@@ -15,7 +15,7 @@ message BidResponse {
 
 message ResultResponse {
      int64 result = 1; // highest bid
-     int64 highest_bidder_id = 2;
+     string highest_bidder_id = 2;
 }
 
 message Empty {}
