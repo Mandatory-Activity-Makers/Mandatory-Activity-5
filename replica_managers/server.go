@@ -31,33 +31,64 @@ type ReplicationServiceServer struct {
 }
 
 func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidRequest) (*proto.BidResponse, error) {
-	// Phase 1: Local validation
+	clientBid := req.GetAmount()
+	clientID := req.GetId()
+
+	log.Printf("Server [%s] BID: Received bid of %d from client %d", s.port, clientBid, clientID)
+
+	// Phase 1: Local validation (quick check, no lock held long)
 	s.mutex.Lock()
-	if req.Amount <= s.highest_bid {
+	if clientBid <= s.highest_bid {
+		currentHighest := s.highest_bid
 		s.mutex.Unlock()
+		log.Printf("Server [%s] BID: Rejected bid %d (not higher than current: %d)", s.port, clientBid, currentHighest)
 		return &proto.BidResponse{Ack: false}, nil
 	}
 	s.mutex.Unlock()
 
-	// Phase 2: Replicate to other servers
+	// Phase 2: Replicate to peers
+	log.Printf("Server [%s] BID: Replicating bid %d to %d peers", s.port, clientBid, len(s.peerClients))
+
 	ackCount := 1 // Count self as acknowledged
 
-	// TODO: For each other server:
-	//   - Call server.Replicate(req)
-	//   - If it responds positively, increment ackCount
-	//   - Handle errors (server might be down!)
+	for i, peerClient := range s.peerClients {
+		replicateReq := &proto.ReplicateRequest{
+			Amount: clientBid,
+			Id:     clientID,
+		}
 
-	// Phase 3: Check quorum
-	requiredAcks := 2 // For 3 servers with F=1 tolerance
+		replicateCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		resp, err := peerClient.Replicate(replicateCtx, replicateReq)
+		cancel()
+
+		if err != nil {
+			log.Printf("Server [%s] BID: Failed to replicate to peer %d: %v", s.port, i, err)
+			continue // Peer might be down, skip it
+		}
+
+		if resp.GetAck() {
+			ackCount++
+			log.Printf("Server [%s] BID: Peer %d acknowledged bid %d", s.port, i, clientBid)
+		} else {
+			log.Printf("Server [%s] BID: Peer %d rejected bid %d", s.port, i, clientBid)
+		}
+	}
+
+	// Phase 3: Check quorum (need F+1 = 2 out of 3 for fault tolerance of 1)
+	requiredAcks := 2
+	log.Printf("Server [%s] BID: Got %d/%d required acknowledgments", s.port, ackCount, requiredAcks)
+
 	if ackCount < requiredAcks {
-		return &proto.BidResponse{Ack: false}, nil // Didn't get enough replicas
+		log.Printf("Server [%s] BID: FAILED - insufficient replication", s.port)
+		return &proto.BidResponse{Ack: false}, nil
 	}
 
 	// Phase 4: Update local state (now it's safe!)
 	s.mutex.Lock()
-	if req.Amount > s.highest_bid {
-		s.highest_bid = req.Amount
-		s.highest_bidder_id = req.Id
+	if clientBid > s.highest_bid { // Double-check in case state changed during replication
+		s.highest_bid = clientBid
+		s.highest_bidder_id = clientID
+		log.Printf("Server [%s] BID: SUCCESS - Updated to bid %d from client %d", s.port, clientBid, clientID)
 	}
 	s.mutex.Unlock()
 
