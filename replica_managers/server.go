@@ -86,8 +86,6 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 	s.mutex.Unlock()
 
 	// Phase 2: Replicate to peers
-	log.Printf("Server [%s] BID: Replicating bid %d to %d peers", s.port, clientBid, len(s.peerClients))
-
 	ackCount := 1 // Count self as acknowledged
 
 	for i, peerClient := range s.peerClients {
@@ -107,7 +105,6 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 
 		if resp.GetAck() {
 			ackCount++
-			log.Printf("Server [%s] BID: Peer %d acknowledged bid %d", s.port, i, clientBid)
 		} else {
 			log.Printf("Server [%s] BID: Peer %d rejected bid %d", s.port, i, clientBid)
 		}
@@ -115,7 +112,6 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 
 	// Phase 3: Check quorum (need F+1 = 2 out of 3 for fault tolerance of 1)
 	requiredAcks := 2
-	log.Printf("Server [%s] BID: Got %d/%d required acknowledgments", s.port, ackCount, requiredAcks)
 
 	if ackCount < requiredAcks {
 		log.Printf("Server [%s] BID: FAILED - insufficient replication", s.port)
@@ -127,7 +123,6 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 	if clientBid > s.highest_bid { // Double-check in case state changed during replication
 		s.highest_bid = clientBid
 		s.highest_bidder_id = clientID
-		log.Printf("Server [%s] BID: SUCCESS - Updated to bid %d from client %s", s.port, clientBid, clientID)
 	}
 	s.mutex.Unlock()
 
@@ -153,9 +148,6 @@ func (s *ReplicationServiceServer) Replicate(ctx context.Context, req *proto.Rep
 	bidAmount := req.GetAmount()
 	bidderID := req.GetId()
 
-	log.Printf("Server [%s] REPLICATE: Received replication of bid %d from client %s",
-		s.port, bidAmount, bidderID)
-
 	// Check if this bid is higher than current highest
 	if bidAmount > s.highest_bid {
 		// Accept and update
@@ -180,7 +172,7 @@ func (s *ReplicationServiceServer) ConnectToPeers() {
 	s.peerClients = make([]proto.ReplicationServiceClient, 0)
 
 	for _, peerAddr := range s.peerAddresses {
-		log.Printf("Server [%s] SETUP: Attempting to connect to peer %s", s.port, peerAddr)
+		//Attempting to connect to peer
 
 		// Create connection with timeout
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -198,7 +190,6 @@ func (s *ReplicationServiceServer) ConnectToPeers() {
 
 		client := proto.NewReplicationServiceClient(conn)
 		s.peerClients = append(s.peerClients, client)
-		log.Printf("Server [%s] SETUP: Successfully connected to peer %s", s.port, peerAddr)
 	}
 
 	log.Printf("Server [%s] SETUP: Connected to %d/%d peers", s.port, len(s.peerClients), len(s.peerAddresses))
