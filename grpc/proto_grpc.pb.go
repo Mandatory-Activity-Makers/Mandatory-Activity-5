@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ReplicationService_Bid_FullMethodName    = "/ReplicationService/Bid"
-	ReplicationService_Result_FullMethodName = "/ReplicationService/Result"
+	ReplicationService_Bid_FullMethodName       = "/ReplicationService/Bid"
+	ReplicationService_Result_FullMethodName    = "/ReplicationService/Result"
+	ReplicationService_Replicate_FullMethodName = "/ReplicationService/Replicate"
 )
 
 // ReplicationServiceClient is the client API for ReplicationService service.
@@ -29,6 +30,7 @@ const (
 type ReplicationServiceClient interface {
 	Bid(ctx context.Context, in *BidRequest, opts ...grpc.CallOption) (*BidResponse, error)
 	Result(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ResultResponse, error)
+	Replicate(ctx context.Context, in *ReplicateRequest, opts ...grpc.CallOption) (*ReplicateResponse, error)
 }
 
 type replicationServiceClient struct {
@@ -59,12 +61,23 @@ func (c *replicationServiceClient) Result(ctx context.Context, in *Empty, opts .
 	return out, nil
 }
 
+func (c *replicationServiceClient) Replicate(ctx context.Context, in *ReplicateRequest, opts ...grpc.CallOption) (*ReplicateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReplicateResponse)
+	err := c.cc.Invoke(ctx, ReplicationService_Replicate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ReplicationServiceServer is the server API for ReplicationService service.
 // All implementations must embed UnimplementedReplicationServiceServer
 // for forward compatibility.
 type ReplicationServiceServer interface {
 	Bid(context.Context, *BidRequest) (*BidResponse, error)
 	Result(context.Context, *Empty) (*ResultResponse, error)
+	Replicate(context.Context, *ReplicateRequest) (*ReplicateResponse, error)
 	mustEmbedUnimplementedReplicationServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedReplicationServiceServer) Bid(context.Context, *BidRequest) (
 }
 func (UnimplementedReplicationServiceServer) Result(context.Context, *Empty) (*ResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Result not implemented")
+}
+func (UnimplementedReplicationServiceServer) Replicate(context.Context, *ReplicateRequest) (*ReplicateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Replicate not implemented")
 }
 func (UnimplementedReplicationServiceServer) mustEmbedUnimplementedReplicationServiceServer() {}
 func (UnimplementedReplicationServiceServer) testEmbeddedByValue()                            {}
@@ -138,6 +154,24 @@ func _ReplicationService_Result_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ReplicationService_Replicate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReplicateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReplicationServiceServer).Replicate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReplicationService_Replicate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReplicationServiceServer).Replicate(ctx, req.(*ReplicateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ReplicationService_ServiceDesc is the grpc.ServiceDesc for ReplicationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var ReplicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Result",
 			Handler:    _ReplicationService_Result_Handler,
+		},
+		{
+			MethodName: "Replicate",
+			Handler:    _ReplicationService_Replicate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

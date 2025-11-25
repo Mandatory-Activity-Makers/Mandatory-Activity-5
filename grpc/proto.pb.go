@@ -169,6 +169,110 @@ func (x *ResultResponse) GetHighestBidderId() string {
 	return ""
 }
 
+type ReplicateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Amount        int64                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	Id            int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReplicateRequest) Reset() {
+	*x = ReplicateRequest{}
+	mi := &file_proto_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReplicateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReplicateRequest) ProtoMessage() {}
+
+func (x *ReplicateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReplicateRequest.ProtoReflect.Descriptor instead.
+func (*ReplicateRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ReplicateRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *ReplicateRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type ReplicateResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Ack            bool                   `protobuf:"varint,1,opt,name=ack,proto3" json:"ack,omitempty"`
+	CurrentHighest int64                  `protobuf:"varint,2,opt,name=current_highest,json=currentHighest,proto3" json:"current_highest,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ReplicateResponse) Reset() {
+	*x = ReplicateResponse{}
+	mi := &file_proto_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReplicateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReplicateResponse) ProtoMessage() {}
+
+func (x *ReplicateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReplicateResponse.ProtoReflect.Descriptor instead.
+func (*ReplicateResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ReplicateResponse) GetAck() bool {
+	if x != nil {
+		return x.Ack
+	}
+	return false
+}
+
+func (x *ReplicateResponse) GetCurrentHighest() int64 {
+	if x != nil {
+		return x.CurrentHighest
+	}
+	return 0
+}
+
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -177,7 +281,7 @@ type Empty struct {
 
 func (x *Empty) Reset() {
 	*x = Empty{}
-	mi := &file_proto_proto_msgTypes[3]
+	mi := &file_proto_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -189,7 +293,7 @@ func (x *Empty) String() string {
 func (*Empty) ProtoMessage() {}
 
 func (x *Empty) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_msgTypes[3]
+	mi := &file_proto_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -202,7 +306,7 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Empty.ProtoReflect.Descriptor instead.
 func (*Empty) Descriptor() ([]byte, []int) {
-	return file_proto_proto_rawDescGZIP(), []int{3}
+	return file_proto_proto_rawDescGZIP(), []int{5}
 }
 
 var File_proto_proto protoreflect.FileDescriptor
@@ -218,11 +322,18 @@ const file_proto_proto_rawDesc = "" +
 	"\x03ack\x18\x01 \x01(\bR\x03ack\"T\n" +
 	"\x0eResultResponse\x12\x16\n" +
 	"\x06result\x18\x01 \x01(\x03R\x06result\x12*\n" +
-	"\x11highest_bidder_id\x18\x02 \x01(\tR\x0fhighestBidderId\"\a\n" +
-	"\x05Empty2]\n" +
+	"\x11highest_bidder_id\x18\x02 \x01(\x03R\x0fhighestBidderId\":\n" +
+	"\x10ReplicateRequest\x12\x16\n" +
+	"\x06amount\x18\x01 \x01(\x03R\x06amount\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"N\n" +
+	"\x11ReplicateResponse\x12\x10\n" +
+	"\x03ack\x18\x01 \x01(\bR\x03ack\x12'\n" +
+	"\x0fcurrent_highest\x18\x02 \x01(\x03R\x0ecurrentHighest\"\a\n" +
+	"\x05Empty2\x93\x01\n" +
 	"\x12ReplicationService\x12\"\n" +
 	"\x03Bid\x12\v.BidRequest\x1a\f.BidResponse\"\x00\x12#\n" +
-	"\x06Result\x12\x06.Empty\x1a\x0f.ResultResponse\"\x00B\x1fZ\x1dReplicationService/grpc/protob\x06proto3"
+	"\x06Result\x12\x06.Empty\x1a\x0f.ResultResponse\"\x00\x124\n" +
+	"\tReplicate\x12\x11.ReplicateRequest\x1a\x12.ReplicateResponse\"\x00B\x1fZ\x1dReplicationService/grpc/protob\x06proto3"
 
 var (
 	file_proto_proto_rawDescOnce sync.Once
@@ -236,20 +347,24 @@ func file_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_rawDescData
 }
 
-var file_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_proto_proto_goTypes = []any{
-	(*BidRequest)(nil),     // 0: BidRequest
-	(*BidResponse)(nil),    // 1: BidResponse
-	(*ResultResponse)(nil), // 2: ResultResponse
-	(*Empty)(nil),          // 3: Empty
+	(*BidRequest)(nil),        // 0: BidRequest
+	(*BidResponse)(nil),       // 1: BidResponse
+	(*ResultResponse)(nil),    // 2: ResultResponse
+	(*ReplicateRequest)(nil),  // 3: ReplicateRequest
+	(*ReplicateResponse)(nil), // 4: ReplicateResponse
+	(*Empty)(nil),             // 5: Empty
 }
 var file_proto_proto_depIdxs = []int32{
 	0, // 0: ReplicationService.Bid:input_type -> BidRequest
-	3, // 1: ReplicationService.Result:input_type -> Empty
-	1, // 2: ReplicationService.Bid:output_type -> BidResponse
-	2, // 3: ReplicationService.Result:output_type -> ResultResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	5, // 1: ReplicationService.Result:input_type -> Empty
+	3, // 2: ReplicationService.Replicate:input_type -> ReplicateRequest
+	1, // 3: ReplicationService.Bid:output_type -> BidResponse
+	2, // 4: ReplicationService.Result:output_type -> ResultResponse
+	4, // 5: ReplicationService.Replicate:output_type -> ReplicateResponse
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -266,7 +381,7 @@ func file_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_rawDesc), len(file_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
