@@ -27,17 +27,53 @@ type ReplicationServiceServer struct {
 	isAuctionActive bool
 
 	highest_bid       int64
-	highest_bidder_id int64
+	highest_bidder_id string
 
 	peerAddresses []string                         // e.g., ["localhost:50052", "localhost:50053"]
 	peerClients   []proto.ReplicationServiceClient // Connections to other servers
+}
+
+// InitializeAuction sets up the auction on the EXISTING instance
+func (s *ReplicationServiceServer) InitializeAuction(duration time.Duration) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	// Initialize the fields on the current instance
+	s.highest_bid = 0
+	s.highest_bidder_id = ""
+	s.isAuctionActive = true
+	s.auctionEnd = time.Now().Add(duration)
+
+	go s.startAuctionTimer(duration)
+	log.Printf("Server [%s] Auction started! Will end at: %v", s.port, s.auctionEnd)
+}
+
+func (s *ReplicationServiceServer) startAuctionTimer(duration time.Duration) {
+	timer := time.NewTimer(duration)
+	<-timer.C
+
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	s.isAuctionActive = false
+
+	log.Printf("Auction ended after %v! Winner: %s with bid: %d",
+		duration, s.highest_bidder_id, s.highest_bid)
 }
 
 func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidRequest) (*proto.BidResponse, error) {
 	clientBid := req.GetAmount()
 	clientID := req.GetId()
 
-	log.Printf("Server [%s] BID: Received bid of %d from client %d", s.port, clientBid, clientID)
+	log.Printf("Server [%s] BID: Received bid of %d from client %s", s.port, clientBid, clientID)
+
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if !s.isAuctionActive {
+		log.Printf("Server [%s] BID: Auction has ended! Highest bid is %d from client %s", s.port, s.highest_bid, s.highest_bidder_id)
+		return &proto.BidResponse{Ack: false}, nil
+	}
 
 	// Phase 1: Local validation (quick check, no lock held long)
 	s.mutex.Lock()
@@ -91,7 +127,7 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 	if clientBid > s.highest_bid { // Double-check in case state changed during replication
 		s.highest_bid = clientBid
 		s.highest_bidder_id = clientID
-		log.Printf("Server [%s] BID: SUCCESS - Updated to bid %d from client %d", s.port, clientBid, clientID)
+		log.Printf("Server [%s] BID: SUCCESS - Updated to bid %d from client %s", s.port, clientBid, clientID)
 	}
 	s.mutex.Unlock()
 
@@ -117,7 +153,7 @@ func (s *ReplicationServiceServer) Replicate(ctx context.Context, req *proto.Rep
 	bidAmount := req.GetAmount()
 	bidderID := req.GetId()
 
-	log.Printf("Server [%s] REPLICATE: Received replication of bid %d from client %d",
+	log.Printf("Server [%s] REPLICATE: Received replication of bid %d from client %s",
 		s.port, bidAmount, bidderID)
 
 	// Check if this bid is higher than current highest
@@ -126,7 +162,7 @@ func (s *ReplicationServiceServer) Replicate(ctx context.Context, req *proto.Rep
 		s.highest_bid = bidAmount
 		s.highest_bidder_id = bidderID
 
-		log.Printf("Server [%s] REPLICATE: Accepted and updated to bid %d from client %d",
+		log.Printf("Server [%s] REPLICATE: Accepted and updated to bid %d from client %s",
 			s.port, bidAmount, bidderID)
 
 		return &proto.ReplicateResponse{Ack: true, CurrentHighest: bidAmount}, nil
@@ -193,6 +229,9 @@ func main() {
 		port:          *port,
 		peerAddresses: peerAddresses,
 	}
+
+	// Start Auction on THE SAME INSTANCE
+	server.InitializeAuction(100 * time.Second)
 
 	// Create and register gRPC server
 	grpcServer := grpc.NewServer()

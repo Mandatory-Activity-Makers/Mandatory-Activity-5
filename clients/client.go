@@ -28,7 +28,7 @@ type ClientConnection struct {
 	clientID     string
 }
 
-func NewClientConnection(clientID int64, serverAddrs []string, startRandom bool) *ClientConnection {
+func NewClientConnection(clientID string, serverAddrs []string, startRandom bool) *ClientConnection {
 	startIdx := 0
 	if startRandom {
 		startIdx = rand.Intn(len(serverAddrs))
@@ -154,18 +154,7 @@ func main() {
 	flag.StringVar(&clientID, "id", "", "Client ID (required)")
 	flag.Parse()
 
-	// Parse command line arguments
-	clientID := flag.Int64("id", 0, "Client ID (if 0, will be auto-generated)")
-	flag.Parse()
-
-	// Auto-generate client ID if not provided
-	if *clientID == 0 {
-		*clientID = time.Now().UnixNano() / int64(time.Millisecond) // Use timestamp as unique ID
-	}
-
-	log.Printf("Client ID: %d", *clientID)
-
-	// List all server addresses
+	// List all server addresses - add more as needed
 	serverAddrs := []string{
 		"localhost:50051",
 		"localhost:50052",
@@ -177,7 +166,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	clientConn := NewClientConnection(clientID, serverAddrs)
+	clientConn := NewClientConnection(clientID, serverAddrs, true)
 
 	if err := clientConn.Connect(); err != nil {
 		log.Fatalf("Failed to establish initial connection: %v", err)
@@ -186,7 +175,7 @@ func main() {
 
 	stdin := bufio.NewScanner(os.Stdin)
 	fmt.Println("========================================")
-	fmt.Printf("Auction Client (ID: %d)\n", *clientID)
+	fmt.Printf("Auction Client (ID: %s)\n", clientID)
 	fmt.Println("========================================")
 	fmt.Println("Commands:")
 	fmt.Println("  bid <amount>   - place a bid, e.g. 'bid 100'")
@@ -212,7 +201,7 @@ func main() {
 			if len(parts) >= 2 {
 				v, err := strconv.ParseInt(parts[1], 10, 64)
 				if err != nil {
-					log.Printf("Invalid amount: %v", err)
+					log.Printf("invalid amount: %v", err)
 					continue
 				}
 				amount = v
@@ -223,7 +212,7 @@ func main() {
 				}
 				v, err := strconv.ParseInt(strings.TrimSpace(stdin.Text()), 10, 64)
 				if err != nil {
-					log.Printf("Invalid amount: %v", err)
+					log.Printf("invalid amount: %v", err)
 					continue
 				}
 				amount = v
@@ -233,7 +222,7 @@ func main() {
 			for {
 				client := clientConn.GetClient()
 				rpcCtx, rpcCancel := context.WithTimeout(context.Background(), 3*time.Second)
-				resp, err := client.Bid(rpcCtx, &proto.BidRequest{Amount: amount, Id: *clientID})
+				resp, err := client.Bid(rpcCtx, &proto.BidRequest{Amount: amount, Id: clientID})
 				rpcCancel()
 
 				if err != nil {
@@ -242,11 +231,7 @@ func main() {
 					continue
 				}
 
-				if resp.GetAck() {
-					log.Printf("✅ BID ACCEPTED: id=%d amount=%d", *clientID, amount)
-				} else {
-					log.Printf("❌ BID REJECTED: id=%d amount=%d (not higher than current highest)", *clientID, amount)
-				}
+				log.Printf("Bid sent: id=%s amount=%d ack=%v", clientID, amount, resp.GetAck())
 				break
 			}
 
@@ -264,12 +249,12 @@ func main() {
 					continue
 				}
 
-				log.Printf("📊 RESULT: highest bid=%d by client=%d", resp.GetResult(), resp.GetHighestBidderId())
+				log.Printf("RESULT: highest bid=%d by client=%s", resp.GetResult(), resp.GetHighestBidderId())
 				break
 			}
 
 		default:
-			fmt.Println("Unknown command; use 'bid <amount>', 'result', or 'quit'")
+			fmt.Println("unknown command; use 'bid <amount>', 'result', or 'quit'")
 		}
 	}
 
