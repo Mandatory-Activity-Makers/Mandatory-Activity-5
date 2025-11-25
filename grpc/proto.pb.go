@@ -172,7 +172,7 @@ func (x *ResultResponse) GetHighestBidderId() string {
 type ReplicateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Amount        int64                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
-	Id            int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -214,11 +214,11 @@ func (x *ReplicateRequest) GetAmount() int64 {
 	return 0
 }
 
-func (x *ReplicateRequest) GetId() int64 {
+func (x *ReplicateRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 type ReplicateResponse struct {
@@ -322,10 +322,10 @@ const file_proto_proto_rawDesc = "" +
 	"\x03ack\x18\x01 \x01(\bR\x03ack\"T\n" +
 	"\x0eResultResponse\x12\x16\n" +
 	"\x06result\x18\x01 \x01(\x03R\x06result\x12*\n" +
-	"\x11highest_bidder_id\x18\x02 \x01(\x03R\x0fhighestBidderId\":\n" +
+	"\x11highest_bidder_id\x18\x02 \x01(\tR\x0fhighestBidderId\":\n" +
 	"\x10ReplicateRequest\x12\x16\n" +
 	"\x06amount\x18\x01 \x01(\x03R\x06amount\x12\x0e\n" +
-	"\x02id\x18\x02 \x01(\x03R\x02id\"N\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\"N\n" +
 	"\x11ReplicateResponse\x12\x10\n" +
 	"\x03ack\x18\x01 \x01(\bR\x03ack\x12'\n" +
 	"\x0fcurrent_highest\x18\x02 \x01(\x03R\x0ecurrentHighest\"\a\n" +
