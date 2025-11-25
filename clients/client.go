@@ -25,7 +25,7 @@ type ClientConnection struct {
 	conn         *grpc.ClientConn
 	mu           sync.RWMutex
 	reconnecting bool
-	clientID     int64
+	clientID     string
 }
 
 func NewClientConnection(clientID int64, serverAddrs []string, startRandom bool) *ClientConnection {
@@ -149,8 +149,10 @@ func (cc *ClientConnection) Close() {
 }
 
 func main() {
-	// Seed random number generator
-	rand.Seed(time.Now().UnixNano())
+	var clientID string
+
+	flag.StringVar(&clientID, "id", "", "Client ID (required)")
+	flag.Parse()
 
 	// Parse command line arguments
 	clientID := flag.Int64("id", 0, "Client ID (if 0, will be auto-generated)")
@@ -170,8 +172,12 @@ func main() {
 		"localhost:50053",
 	}
 
-	// Create client connection with random starting server
-	clientConn := NewClientConnection(*clientID, serverAddrs, true)
+	if clientID == "" {
+		fmt.Fprintln(os.Stderr, "client id is required: -id <name>")
+		os.Exit(2)
+	}
+
+	clientConn := NewClientConnection(clientID, serverAddrs)
 
 	if err := clientConn.Connect(); err != nil {
 		log.Fatalf("Failed to establish initial connection: %v", err)

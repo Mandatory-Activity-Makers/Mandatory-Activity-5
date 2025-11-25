@@ -20,9 +20,12 @@ import (
 type ReplicationServiceServer struct {
 	proto.UnimplementedReplicationServiceServer
 
-	port              string
-	mutex             sync.Mutex
-	timestamp         int64
+	port  string
+	mutex sync.Mutex
+
+	auctionEnd      time.Time
+	isAuctionActive bool
+
 	highest_bid       int64
 	highest_bidder_id int64
 
@@ -99,7 +102,7 @@ func (s *ReplicationServiceServer) Result(ctx context.Context, _ *proto.Empty) (
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	log.Printf("Server [%s] RESULT: Returning highest bid: %d by client %d", s.port, s.highest_bid, s.highest_bidder_id)
+	log.Printf("Server [%s] RESULT: Returning highest bid: %d by client %s", s.port, s.highest_bid, s.highest_bidder_id)
 
 	return &proto.ResultResponse{
 		Result:          s.highest_bid,
