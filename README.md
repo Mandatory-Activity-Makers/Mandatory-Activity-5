@@ -13,9 +13,9 @@ go run server.go -port 50053 -peers "localhost:50051,localhost:50052"
 **In as many client terminals you want to run, write:**
 
 ```
-go run client.go -id 1
-go run client.go -id 2
-go run client.go -id 3
+go run client.go -id Anna
+go run client.go -id Bob
+go run client.go -id Carl
 ...
 go run client.go -id x
 ```
