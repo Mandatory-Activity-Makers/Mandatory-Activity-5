@@ -68,12 +68,12 @@ func (s *ReplicationServiceServer) Bid(ctx context.Context, req *proto.BidReques
 	log.Printf("Server [%s] BID: Received bid of %d from client %s", s.port, clientBid, clientID)
 
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
 
 	if !s.isAuctionActive {
 		log.Printf("Server [%s] BID: Auction has ended! Highest bid is %d from client %s", s.port, s.highest_bid, s.highest_bidder_id)
 		return &proto.BidResponse{Ack: false}, nil
 	}
+	s.mutex.Unlock()
 
 	// Phase 1: Local validation (quick check, no lock held long)
 	s.mutex.Lock()
