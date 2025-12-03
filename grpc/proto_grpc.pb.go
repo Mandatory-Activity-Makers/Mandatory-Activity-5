@@ -19,18 +19,32 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ReplicationService_Bid_FullMethodName       = "/ReplicationService/Bid"
-	ReplicationService_Result_FullMethodName    = "/ReplicationService/Result"
-	ReplicationService_Replicate_FullMethodName = "/ReplicationService/Replicate"
+	ReplicationService_Bid_FullMethodName         = "/ReplicationService/Bid"
+	ReplicationService_Result_FullMethodName      = "/ReplicationService/Result"
+	ReplicationService_Replicate_FullMethodName   = "/ReplicationService/Replicate"
+	ReplicationService_Propose_FullMethodName     = "/ReplicationService/Propose"
+	ReplicationService_Decide_FullMethodName      = "/ReplicationService/Decide"
+	ReplicationService_CheckResult_FullMethodName = "/ReplicationService/CheckResult"
+	ReplicationService_Prepare_FullMethodName     = "/ReplicationService/Prepare"
+	ReplicationService_Commit_FullMethodName      = "/ReplicationService/Commit"
 )
 
 // ReplicationServiceClient is the client API for ReplicationService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ReplicationServiceClient interface {
+	// Original methods
 	Bid(ctx context.Context, in *BidRequest, opts ...grpc.CallOption) (*BidResponse, error)
 	Result(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ResultResponse, error)
 	Replicate(ctx context.Context, in *ReplicateRequest, opts ...grpc.CallOption) (*ReplicateResponse, error)
+	// New consensus methods
+	Propose(ctx context.Context, in *ProposeRequest, opts ...grpc.CallOption) (*ProposeResponse, error)
+	Decide(ctx context.Context, in *DecideRequest, opts ...grpc.CallOption) (*DecideResponse, error)
+	// Optional methods for checking status
+	CheckResult(ctx context.Context, in *CheckRequest, opts ...grpc.CallOption) (*CheckResponse, error)
+	// Two-phase commit methods (alternative approach)
+	Prepare(ctx context.Context, in *PrepareRequest, opts ...grpc.CallOption) (*PrepareResponse, error)
+	Commit(ctx context.Context, in *CommitRequest, opts ...grpc.CallOption) (*CommitResponse, error)
 }
 
 type replicationServiceClient struct {
@@ -71,13 +85,72 @@ func (c *replicationServiceClient) Replicate(ctx context.Context, in *ReplicateR
 	return out, nil
 }
 
+func (c *replicationServiceClient) Propose(ctx context.Context, in *ProposeRequest, opts ...grpc.CallOption) (*ProposeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ProposeResponse)
+	err := c.cc.Invoke(ctx, ReplicationService_Propose_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *replicationServiceClient) Decide(ctx context.Context, in *DecideRequest, opts ...grpc.CallOption) (*DecideResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DecideResponse)
+	err := c.cc.Invoke(ctx, ReplicationService_Decide_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *replicationServiceClient) CheckResult(ctx context.Context, in *CheckRequest, opts ...grpc.CallOption) (*CheckResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckResponse)
+	err := c.cc.Invoke(ctx, ReplicationService_CheckResult_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *replicationServiceClient) Prepare(ctx context.Context, in *PrepareRequest, opts ...grpc.CallOption) (*PrepareResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrepareResponse)
+	err := c.cc.Invoke(ctx, ReplicationService_Prepare_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *replicationServiceClient) Commit(ctx context.Context, in *CommitRequest, opts ...grpc.CallOption) (*CommitResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommitResponse)
+	err := c.cc.Invoke(ctx, ReplicationService_Commit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ReplicationServiceServer is the server API for ReplicationService service.
 // All implementations must embed UnimplementedReplicationServiceServer
 // for forward compatibility.
 type ReplicationServiceServer interface {
+	// Original methods
 	Bid(context.Context, *BidRequest) (*BidResponse, error)
 	Result(context.Context, *Empty) (*ResultResponse, error)
 	Replicate(context.Context, *ReplicateRequest) (*ReplicateResponse, error)
+	// New consensus methods
+	Propose(context.Context, *ProposeRequest) (*ProposeResponse, error)
+	Decide(context.Context, *DecideRequest) (*DecideResponse, error)
+	// Optional methods for checking status
+	CheckResult(context.Context, *CheckRequest) (*CheckResponse, error)
+	// Two-phase commit methods (alternative approach)
+	Prepare(context.Context, *PrepareRequest) (*PrepareResponse, error)
+	Commit(context.Context, *CommitRequest) (*CommitResponse, error)
 	mustEmbedUnimplementedReplicationServiceServer()
 }
 
@@ -96,6 +169,21 @@ func (UnimplementedReplicationServiceServer) Result(context.Context, *Empty) (*R
 }
 func (UnimplementedReplicationServiceServer) Replicate(context.Context, *ReplicateRequest) (*ReplicateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Replicate not implemented")
+}
+func (UnimplementedReplicationServiceServer) Propose(context.Context, *ProposeRequest) (*ProposeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Propose not implemented")
+}
+func (UnimplementedReplicationServiceServer) Decide(context.Context, *DecideRequest) (*DecideResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Decide not implemented")
+}
+func (UnimplementedReplicationServiceServer) CheckResult(context.Context, *CheckRequest) (*CheckResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckResult not implemented")
+}
+func (UnimplementedReplicationServiceServer) Prepare(context.Context, *PrepareRequest) (*PrepareResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Prepare not implemented")
+}
+func (UnimplementedReplicationServiceServer) Commit(context.Context, *CommitRequest) (*CommitResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Commit not implemented")
 }
 func (UnimplementedReplicationServiceServer) mustEmbedUnimplementedReplicationServiceServer() {}
 func (UnimplementedReplicationServiceServer) testEmbeddedByValue()                            {}
@@ -172,6 +260,96 @@ func _ReplicationService_Replicate_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ReplicationService_Propose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProposeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReplicationServiceServer).Propose(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReplicationService_Propose_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReplicationServiceServer).Propose(ctx, req.(*ProposeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ReplicationService_Decide_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DecideRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReplicationServiceServer).Decide(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReplicationService_Decide_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReplicationServiceServer).Decide(ctx, req.(*DecideRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ReplicationService_CheckResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReplicationServiceServer).CheckResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReplicationService_CheckResult_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReplicationServiceServer).CheckResult(ctx, req.(*CheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ReplicationService_Prepare_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepareRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReplicationServiceServer).Prepare(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReplicationService_Prepare_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReplicationServiceServer).Prepare(ctx, req.(*PrepareRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ReplicationService_Commit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReplicationServiceServer).Commit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReplicationService_Commit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReplicationServiceServer).Commit(ctx, req.(*CommitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ReplicationService_ServiceDesc is the grpc.ServiceDesc for ReplicationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +368,26 @@ var ReplicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Replicate",
 			Handler:    _ReplicationService_Replicate_Handler,
+		},
+		{
+			MethodName: "Propose",
+			Handler:    _ReplicationService_Propose_Handler,
+		},
+		{
+			MethodName: "Decide",
+			Handler:    _ReplicationService_Decide_Handler,
+		},
+		{
+			MethodName: "CheckResult",
+			Handler:    _ReplicationService_CheckResult_Handler,
+		},
+		{
+			MethodName: "Prepare",
+			Handler:    _ReplicationService_Prepare_Handler,
+		},
+		{
+			MethodName: "Commit",
+			Handler:    _ReplicationService_Commit_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

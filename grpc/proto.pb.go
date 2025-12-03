@@ -21,6 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Existing messages (kept for backward compatibility)
 type BidRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Amount        int64                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
@@ -273,6 +274,616 @@ func (x *ReplicateResponse) GetCurrentHighest() int64 {
 	return 0
 }
 
+type ProposeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Amount        int64                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`                 // Lamport timestamp
+	ReplicaId     string                 `protobuf:"bytes,4,opt,name=replica_id,json=replicaId,proto3" json:"replica_id,omitempty"` // Which replica initiated this proposal
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProposeRequest) Reset() {
+	*x = ProposeRequest{}
+	mi := &file_proto_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProposeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProposeRequest) ProtoMessage() {}
+
+func (x *ProposeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProposeRequest.ProtoReflect.Descriptor instead.
+func (*ProposeRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ProposeRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *ProposeRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ProposeRequest) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *ProposeRequest) GetReplicaId() string {
+	if x != nil {
+		return x.ReplicaId
+	}
+	return ""
+}
+
+type ProposeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Accept        bool                   `protobuf:"varint,1,opt,name=accept,proto3" json:"accept,omitempty"`                       // Whether this replica accepts the proposal
+	Timestamp     int64                  `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`                 // This replica's updated timestamp
+	ReplicaId     string                 `protobuf:"bytes,3,opt,name=replica_id,json=replicaId,proto3" json:"replica_id,omitempty"` // ADD THIS - who is voting
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProposeResponse) Reset() {
+	*x = ProposeResponse{}
+	mi := &file_proto_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProposeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProposeResponse) ProtoMessage() {}
+
+func (x *ProposeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProposeResponse.ProtoReflect.Descriptor instead.
+func (*ProposeResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ProposeResponse) GetAccept() bool {
+	if x != nil {
+		return x.Accept
+	}
+	return false
+}
+
+func (x *ProposeResponse) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *ProposeResponse) GetReplicaId() string {
+	if x != nil {
+		return x.ReplicaId
+	}
+	return ""
+}
+
+type DecideRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Timestamp     int64                  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`                 // Timestamp of proposal being decided
+	Accepted      bool                   `protobuf:"varint,2,opt,name=accepted,proto3" json:"accepted,omitempty"`                   // Whether the initiator thinks it should be accepted
+	ReplicaId     string                 `protobuf:"bytes,3,opt,name=replica_id,json=replicaId,proto3" json:"replica_id,omitempty"` // Replica making the decision
+	Amount        int64                  `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`                       // ADD: Needed for execution
+	Id            string                 `protobuf:"bytes,5,opt,name=id,proto3" json:"id,omitempty"`                                // ADD: Needed for execution
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DecideRequest) Reset() {
+	*x = DecideRequest{}
+	mi := &file_proto_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DecideRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DecideRequest) ProtoMessage() {}
+
+func (x *DecideRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DecideRequest.ProtoReflect.Descriptor instead.
+func (*DecideRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DecideRequest) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *DecideRequest) GetAccepted() bool {
+	if x != nil {
+		return x.Accepted
+	}
+	return false
+}
+
+func (x *DecideRequest) GetReplicaId() string {
+	if x != nil {
+		return x.ReplicaId
+	}
+	return ""
+}
+
+func (x *DecideRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *DecideRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DecideResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ack           bool                   `protobuf:"varint,1,opt,name=ack,proto3" json:"ack,omitempty"` // Acknowledgment of decision receipt
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DecideResponse) Reset() {
+	*x = DecideResponse{}
+	mi := &file_proto_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DecideResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DecideResponse) ProtoMessage() {}
+
+func (x *DecideResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DecideResponse.ProtoReflect.Descriptor instead.
+func (*DecideResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *DecideResponse) GetAck() bool {
+	if x != nil {
+		return x.Ack
+	}
+	return false
+}
+
+// Optional: For checking consensus status
+type CheckRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Timestamp     int64                  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`              // Timestamp to check
+	Amount        int64                  `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`                    // Amount to verify
+	ClientId      string                 `protobuf:"bytes,3,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty"` // Client who made the bid
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckRequest) Reset() {
+	*x = CheckRequest{}
+	mi := &file_proto_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckRequest) ProtoMessage() {}
+
+func (x *CheckRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckRequest.ProtoReflect.Descriptor instead.
+func (*CheckRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *CheckRequest) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *CheckRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *CheckRequest) GetClientId() string {
+	if x != nil {
+		return x.ClientId
+	}
+	return ""
+}
+
+type CheckResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Decided        bool                   `protobuf:"varint,1,opt,name=decided,proto3" json:"decided,omitempty"`                                     // Whether consensus reached
+	Accepted       bool                   `protobuf:"varint,2,opt,name=accepted,proto3" json:"accepted,omitempty"`                                   // Whether bid was accepted
+	CurrentHighest int64                  `protobuf:"varint,3,opt,name=current_highest,json=currentHighest,proto3" json:"current_highest,omitempty"` // Current highest bid (for reference)
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CheckResponse) Reset() {
+	*x = CheckResponse{}
+	mi := &file_proto_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckResponse) ProtoMessage() {}
+
+func (x *CheckResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckResponse.ProtoReflect.Descriptor instead.
+func (*CheckResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CheckResponse) GetDecided() bool {
+	if x != nil {
+		return x.Decided
+	}
+	return false
+}
+
+func (x *CheckResponse) GetAccepted() bool {
+	if x != nil {
+		return x.Accepted
+	}
+	return false
+}
+
+func (x *CheckResponse) GetCurrentHighest() int64 {
+	if x != nil {
+		return x.CurrentHighest
+	}
+	return 0
+}
+
+// For two-phase commit alternative
+type PrepareRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Amount        int64                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrepareRequest) Reset() {
+	*x = PrepareRequest{}
+	mi := &file_proto_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareRequest) ProtoMessage() {}
+
+func (x *PrepareRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareRequest.ProtoReflect.Descriptor instead.
+func (*PrepareRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PrepareRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *PrepareRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PrepareRequest) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+type PrepareResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	CanAccept        bool                   `protobuf:"varint,1,opt,name=can_accept,json=canAccept,proto3" json:"can_accept,omitempty"`
+	PromiseTimestamp int64                  `protobuf:"varint,2,opt,name=promise_timestamp,json=promiseTimestamp,proto3" json:"promise_timestamp,omitempty"` // Promise not to accept older proposals
+	CurrentHighest   int64                  `protobuf:"varint,3,opt,name=current_highest,json=currentHighest,proto3" json:"current_highest,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *PrepareResponse) Reset() {
+	*x = PrepareResponse{}
+	mi := &file_proto_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareResponse) ProtoMessage() {}
+
+func (x *PrepareResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareResponse.ProtoReflect.Descriptor instead.
+func (*PrepareResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *PrepareResponse) GetCanAccept() bool {
+	if x != nil {
+		return x.CanAccept
+	}
+	return false
+}
+
+func (x *PrepareResponse) GetPromiseTimestamp() int64 {
+	if x != nil {
+		return x.PromiseTimestamp
+	}
+	return 0
+}
+
+func (x *PrepareResponse) GetCurrentHighest() int64 {
+	if x != nil {
+		return x.CurrentHighest
+	}
+	return 0
+}
+
+type CommitRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Amount        int64                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Commit        bool                   `protobuf:"varint,4,opt,name=commit,proto3" json:"commit,omitempty"` // true = commit, false = abort
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommitRequest) Reset() {
+	*x = CommitRequest{}
+	mi := &file_proto_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommitRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitRequest) ProtoMessage() {}
+
+func (x *CommitRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitRequest.ProtoReflect.Descriptor instead.
+func (*CommitRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *CommitRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *CommitRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CommitRequest) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *CommitRequest) GetCommit() bool {
+	if x != nil {
+		return x.Commit
+	}
+	return false
+}
+
+type CommitResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Success        bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	CurrentHighest int64                  `protobuf:"varint,2,opt,name=current_highest,json=currentHighest,proto3" json:"current_highest,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CommitResponse) Reset() {
+	*x = CommitResponse{}
+	mi := &file_proto_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommitResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitResponse) ProtoMessage() {}
+
+func (x *CommitResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitResponse.ProtoReflect.Descriptor instead.
+func (*CommitResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CommitResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *CommitResponse) GetCurrentHighest() int64 {
+	if x != nil {
+		return x.CurrentHighest
+	}
+	return 0
+}
+
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -281,7 +892,7 @@ type Empty struct {
 
 func (x *Empty) Reset() {
 	*x = Empty{}
-	mi := &file_proto_proto_msgTypes[5]
+	mi := &file_proto_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -293,7 +904,7 @@ func (x *Empty) String() string {
 func (*Empty) ProtoMessage() {}
 
 func (x *Empty) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_msgTypes[5]
+	mi := &file_proto_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -306,7 +917,7 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Empty.ProtoReflect.Descriptor instead.
 func (*Empty) Descriptor() ([]byte, []int) {
-	return file_proto_proto_rawDescGZIP(), []int{5}
+	return file_proto_proto_rawDescGZIP(), []int{15}
 }
 
 var File_proto_proto protoreflect.FileDescriptor
@@ -328,12 +939,62 @@ const file_proto_proto_rawDesc = "" +
 	"\x02id\x18\x02 \x01(\tR\x02id\"N\n" +
 	"\x11ReplicateResponse\x12\x10\n" +
 	"\x03ack\x18\x01 \x01(\bR\x03ack\x12'\n" +
+	"\x0fcurrent_highest\x18\x02 \x01(\x03R\x0ecurrentHighest\"u\n" +
+	"\x0eProposeRequest\x12\x16\n" +
+	"\x06amount\x18\x01 \x01(\x03R\x06amount\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\x12\x1c\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12\x1d\n" +
+	"\n" +
+	"replica_id\x18\x04 \x01(\tR\treplicaId\"f\n" +
+	"\x0fProposeResponse\x12\x16\n" +
+	"\x06accept\x18\x01 \x01(\bR\x06accept\x12\x1c\n" +
+	"\ttimestamp\x18\x02 \x01(\x03R\ttimestamp\x12\x1d\n" +
+	"\n" +
+	"replica_id\x18\x03 \x01(\tR\treplicaId\"\x90\x01\n" +
+	"\rDecideRequest\x12\x1c\n" +
+	"\ttimestamp\x18\x01 \x01(\x03R\ttimestamp\x12\x1a\n" +
+	"\baccepted\x18\x02 \x01(\bR\baccepted\x12\x1d\n" +
+	"\n" +
+	"replica_id\x18\x03 \x01(\tR\treplicaId\x12\x16\n" +
+	"\x06amount\x18\x04 \x01(\x03R\x06amount\x12\x0e\n" +
+	"\x02id\x18\x05 \x01(\tR\x02id\"\"\n" +
+	"\x0eDecideResponse\x12\x10\n" +
+	"\x03ack\x18\x01 \x01(\bR\x03ack\"a\n" +
+	"\fCheckRequest\x12\x1c\n" +
+	"\ttimestamp\x18\x01 \x01(\x03R\ttimestamp\x12\x16\n" +
+	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x1b\n" +
+	"\tclient_id\x18\x03 \x01(\tR\bclientId\"n\n" +
+	"\rCheckResponse\x12\x18\n" +
+	"\adecided\x18\x01 \x01(\bR\adecided\x12\x1a\n" +
+	"\baccepted\x18\x02 \x01(\bR\baccepted\x12'\n" +
+	"\x0fcurrent_highest\x18\x03 \x01(\x03R\x0ecurrentHighest\"V\n" +
+	"\x0ePrepareRequest\x12\x16\n" +
+	"\x06amount\x18\x01 \x01(\x03R\x06amount\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\x12\x1c\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\x86\x01\n" +
+	"\x0fPrepareResponse\x12\x1d\n" +
+	"\n" +
+	"can_accept\x18\x01 \x01(\bR\tcanAccept\x12+\n" +
+	"\x11promise_timestamp\x18\x02 \x01(\x03R\x10promiseTimestamp\x12'\n" +
+	"\x0fcurrent_highest\x18\x03 \x01(\x03R\x0ecurrentHighest\"m\n" +
+	"\rCommitRequest\x12\x16\n" +
+	"\x06amount\x18\x01 \x01(\x03R\x06amount\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\x12\x1c\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12\x16\n" +
+	"\x06commit\x18\x04 \x01(\bR\x06commit\"S\n" +
+	"\x0eCommitResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12'\n" +
 	"\x0fcurrent_highest\x18\x02 \x01(\x03R\x0ecurrentHighest\"\a\n" +
-	"\x05Empty2\x93\x01\n" +
+	"\x05Empty2\xfd\x02\n" +
 	"\x12ReplicationService\x12\"\n" +
 	"\x03Bid\x12\v.BidRequest\x1a\f.BidResponse\"\x00\x12#\n" +
 	"\x06Result\x12\x06.Empty\x1a\x0f.ResultResponse\"\x00\x124\n" +
-	"\tReplicate\x12\x11.ReplicateRequest\x1a\x12.ReplicateResponse\"\x00B\x1fZ\x1dReplicationService/grpc/protob\x06proto3"
+	"\tReplicate\x12\x11.ReplicateRequest\x1a\x12.ReplicateResponse\"\x00\x12.\n" +
+	"\aPropose\x12\x0f.ProposeRequest\x1a\x10.ProposeResponse\"\x00\x12+\n" +
+	"\x06Decide\x12\x0e.DecideRequest\x1a\x0f.DecideResponse\"\x00\x12.\n" +
+	"\vCheckResult\x12\r.CheckRequest\x1a\x0e.CheckResponse\"\x00\x12.\n" +
+	"\aPrepare\x12\x0f.PrepareRequest\x1a\x10.PrepareResponse\"\x00\x12+\n" +
+	"\x06Commit\x12\x0e.CommitRequest\x1a\x0f.CommitResponse\"\x00B\x1fZ\x1dReplicationService/grpc/protob\x06proto3"
 
 var (
 	file_proto_proto_rawDescOnce sync.Once
@@ -347,27 +1008,47 @@ func file_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_rawDescData
 }
 
-var file_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_proto_proto_goTypes = []any{
 	(*BidRequest)(nil),        // 0: BidRequest
 	(*BidResponse)(nil),       // 1: BidResponse
 	(*ResultResponse)(nil),    // 2: ResultResponse
 	(*ReplicateRequest)(nil),  // 3: ReplicateRequest
 	(*ReplicateResponse)(nil), // 4: ReplicateResponse
-	(*Empty)(nil),             // 5: Empty
+	(*ProposeRequest)(nil),    // 5: ProposeRequest
+	(*ProposeResponse)(nil),   // 6: ProposeResponse
+	(*DecideRequest)(nil),     // 7: DecideRequest
+	(*DecideResponse)(nil),    // 8: DecideResponse
+	(*CheckRequest)(nil),      // 9: CheckRequest
+	(*CheckResponse)(nil),     // 10: CheckResponse
+	(*PrepareRequest)(nil),    // 11: PrepareRequest
+	(*PrepareResponse)(nil),   // 12: PrepareResponse
+	(*CommitRequest)(nil),     // 13: CommitRequest
+	(*CommitResponse)(nil),    // 14: CommitResponse
+	(*Empty)(nil),             // 15: Empty
 }
 var file_proto_proto_depIdxs = []int32{
-	0, // 0: ReplicationService.Bid:input_type -> BidRequest
-	5, // 1: ReplicationService.Result:input_type -> Empty
-	3, // 2: ReplicationService.Replicate:input_type -> ReplicateRequest
-	1, // 3: ReplicationService.Bid:output_type -> BidResponse
-	2, // 4: ReplicationService.Result:output_type -> ResultResponse
-	4, // 5: ReplicationService.Replicate:output_type -> ReplicateResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: ReplicationService.Bid:input_type -> BidRequest
+	15, // 1: ReplicationService.Result:input_type -> Empty
+	3,  // 2: ReplicationService.Replicate:input_type -> ReplicateRequest
+	5,  // 3: ReplicationService.Propose:input_type -> ProposeRequest
+	7,  // 4: ReplicationService.Decide:input_type -> DecideRequest
+	9,  // 5: ReplicationService.CheckResult:input_type -> CheckRequest
+	11, // 6: ReplicationService.Prepare:input_type -> PrepareRequest
+	13, // 7: ReplicationService.Commit:input_type -> CommitRequest
+	1,  // 8: ReplicationService.Bid:output_type -> BidResponse
+	2,  // 9: ReplicationService.Result:output_type -> ResultResponse
+	4,  // 10: ReplicationService.Replicate:output_type -> ReplicateResponse
+	6,  // 11: ReplicationService.Propose:output_type -> ProposeResponse
+	8,  // 12: ReplicationService.Decide:output_type -> DecideResponse
+	10, // 13: ReplicationService.CheckResult:output_type -> CheckResponse
+	12, // 14: ReplicationService.Prepare:output_type -> PrepareResponse
+	14, // 15: ReplicationService.Commit:output_type -> CommitResponse
+	8,  // [8:16] is the sub-list for method output_type
+	0,  // [0:8] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_proto_proto_init() }
@@ -381,7 +1062,7 @@ func file_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_rawDesc), len(file_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
