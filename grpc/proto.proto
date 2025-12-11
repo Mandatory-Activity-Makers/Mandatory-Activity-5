@@ -4,6 +4,7 @@ option go_package = "ReplicationService/grpc/proto";
 // Compile .proto with the following command inside ./grpc/ folder
 // protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto.proto
 
+// Existing messages (kept for backward compatibility)
 message BidRequest {
     int64 amount = 1;
     string id = 2;
@@ -28,12 +29,87 @@ message ReplicateResponse {
     int64 current_highest = 2;
 }
 
+// NEW MESSAGES FOR LAMPORT CONSENSUS
+
+message ProposeRequest {
+    int64 amount = 1;
+    string id = 2;
+    int64 timestamp = 3;      // Lamport timestamp
+    string replica_id = 4;    // Which replica initiated this proposal
+}
+
+message ProposeResponse {
+    bool accept = 1;          // Whether this replica accepts the proposal
+    int64 timestamp = 2;      // This replica's updated timestamp
+    string replica_id = 3;  // ADD THIS - who is voting
+}
+
+message DecideRequest {
+    int64 timestamp = 1;      // Timestamp of proposal being decided
+    bool accepted = 2;        // Whether the initiator thinks it should be accepted
+    string replica_id = 3;    // Replica making the decision
+    int64 amount = 4;       // ADD: Needed for execution
+    string id = 5;          // ADD: Needed for execution
+}
+
+message DecideResponse {
+    bool ack = 1;             // Acknowledgment of decision receipt
+}
+
+// Optional: For checking consensus status
+message CheckRequest {
+    int64 timestamp = 1;      // Timestamp to check
+    int64 amount = 2;         // Amount to verify
+    string client_id = 3;     // Client who made the bid
+}
+
+message CheckResponse {
+    bool decided = 1;         // Whether consensus reached
+    bool accepted = 2;        // Whether bid was accepted
+    int64 current_highest = 3; // Current highest bid (for reference)
+}
+
+// For two-phase commit alternative
+message PrepareRequest {
+    int64 amount = 1;
+    string id = 2;
+    int64 timestamp = 3;
+}
+
+message PrepareResponse {
+    bool can_accept = 1;
+    int64 promise_timestamp = 2; // Promise not to accept older proposals
+    int64 current_highest = 3;
+}
+
+message CommitRequest {
+    int64 amount = 1;
+    string id = 2;
+    int64 timestamp = 3;
+    bool commit = 4;           // true = commit, false = abort
+}
+
+message CommitResponse {
+    bool success = 1;
+    int64 current_highest = 2;
+}
+
 message Empty {}
 
 service ReplicationService {
+    // Original methods
     rpc Bid (BidRequest) returns (BidResponse) {};
-
     rpc Result (Empty) returns (ResultResponse) {};
-
     rpc Replicate (ReplicateRequest) returns (ReplicateResponse) {};
-} 
+    
+    // New consensus methods
+    rpc Propose (ProposeRequest) returns (ProposeResponse) {};
+    rpc Decide (DecideRequest) returns (DecideResponse) {};
+    
+    // Optional methods for checking status
+    rpc CheckResult (CheckRequest) returns (CheckResponse) {};
+    
+    // Two-phase commit methods (alternative approach)
+    rpc Prepare (PrepareRequest) returns (PrepareResponse) {};
+    rpc Commit (CommitRequest) returns (CommitResponse) {};
+}
